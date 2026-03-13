@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/neon-tower-depend/static/css/main.79c8fc8a.css",
-    "main.js": "/neon-tower-depend/static/js/main.28ebf0b5.js",
+    "main.css": "/neon-tower-depend/static/css/main.238311f0.css",
+    "main.js": "/neon-tower-depend/static/js/main.85adda7e.js",
     "static/js/453.b444fab8.chunk.js": "/neon-tower-depend/static/js/453.b444fab8.chunk.js",
     "index.html": "/neon-tower-depend/index.html",
-    "main.79c8fc8a.css.map": "/neon-tower-depend/static/css/main.79c8fc8a.css.map",
-    "main.28ebf0b5.js.map": "/neon-tower-depend/static/js/main.28ebf0b5.js.map",
+    "main.238311f0.css.map": "/neon-tower-depend/static/css/main.238311f0.css.map",
+    "main.85adda7e.js.map": "/neon-tower-depend/static/js/main.85adda7e.js.map",
     "453.b444fab8.chunk.js.map": "/neon-tower-depend/static/js/453.b444fab8.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.79c8fc8a.css",
-    "static/js/main.28ebf0b5.js"
+    "static/css/main.238311f0.css",
+    "static/js/main.85adda7e.js"
   ]
 }
