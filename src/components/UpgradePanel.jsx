@@ -3,137 +3,91 @@ import { UPGRADE_CATEGORIES, calculateUpgradeCost } from '../config/upgradeConfi
 
 export default function UpgradePanel({ upgrades, money, tower, onUpgrade, onClose }) {
   const [activeCategory, setActiveCategory] = useState('attack');
-
   const category = UPGRADE_CATEGORIES[activeCategory];
 
-  const getUpgradeLevel = (upgradeId) => upgrades[upgradeId] || 0;
+  const getLevel = (id) => upgrades[id] || 0;
+  const getCost = (u) => calculateUpgradeCost({ ...u, currentLevel: getLevel(u.id) });
+  const isMaxed = (u) => u.maxLevel ? getLevel(u.id) >= u.maxLevel : false;
+  const canAfford = (u) => money >= getCost(u) && !isMaxed(u);
 
-  const getUpgradeCostWithLevel = (upgrade) => {
-    const level = getUpgradeLevel(upgrade.id);
-    return calculateUpgradeCost({ ...upgrade, currentLevel: level });
-  };
-
-  const isMaxLevel = (upgrade) => {
-    if (!upgrade.maxLevel) return false;
-    return getUpgradeLevel(upgrade.id) >= upgrade.maxLevel;
-  };
-
-  const canAfford = (upgrade) => {
-    return money >= getUpgradeCostWithLevel(upgrade) && !isMaxLevel(upgrade);
-  };
-
-  const getStatDisplay = (upgrade) => {
-    const level = getUpgradeLevel(upgrade.id);
-    const key = upgrade.statKey;
-
-    if (key === 'coinBonus') {
-      return `+${level * upgrade.increment} 코인`;
-    }
-
-    const baseVal = tower[key] ?? 0;
-    return `${baseVal.toFixed ? baseVal.toFixed(1) : baseVal}`;
+  const getStatDisplay = (u) => {
+    if (u.statKey === 'coinBonus') return `+${getLevel(u.id) * u.increment}`;
+    const v = tower[u.statKey] ?? 0;
+    return typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(1) : String(v);
   };
 
   return (
     <div
       style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'rgba(0,0,0,0.75)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        position: 'absolute', inset: 0,
+        background: 'rgba(0,0,0,0.82)',
+        display: 'flex', flexDirection: 'column',
         zIndex: 100,
-        backdropFilter: 'blur(4px)',
+        backdropFilter: 'blur(6px)',
       }}
       onClick={onClose}
     >
       <div
         style={{
-          background: '#0a0a0f',
-          border: '2px solid rgba(0,255,255,0.5)',
+          flex: 1,
+          display: 'flex', flexDirection: 'column',
+          background: '#080810',
+          margin: 12,
           borderRadius: 12,
-          padding: 24,
-          width: 500,
-          maxHeight: '80vh',
-          overflowY: 'auto',
-          boxShadow: '0 0 40px rgba(0,255,255,0.3)',
-          position: 'relative',
+          border: '2px solid rgba(0,255,255,0.4)',
+          boxShadow: '0 0 30px rgba(0,255,255,0.2)',
+          overflow: 'hidden',
         }}
         onClick={e => e.stopPropagation()}
       >
         {/* 헤더 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{
-            color: '#00ffff',
-            fontFamily: 'monospace',
-            fontSize: 20,
-            margin: 0,
-            textShadow: '0 0 12px #00ffff',
-            letterSpacing: 3,
-          }}>
-            UPGRADE SHOP
-          </h2>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}>
-            <span style={{ fontSize: 14 }}>💰</span>
-            <span style={{
-              color: '#ffd700',
-              fontFamily: 'monospace',
-              fontSize: 18,
-              fontWeight: 'bold',
-              textShadow: '0 0 8px #ffd700',
-            }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '12px 14px',
+          borderBottom: '1px solid rgba(0,255,255,0.2)',
+          flexShrink: 0,
+        }}>
+          <span style={{ color: '#00ffff', fontFamily: 'monospace', fontSize: 15, fontWeight: 'bold', textShadow: '0 0 10px #00ffff', letterSpacing: 2 }}>
+            UPGRADE
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ fontSize: 13 }}>💰</span>
+            <span style={{ color: '#ffd700', fontFamily: 'monospace', fontSize: 16, fontWeight: 'bold', textShadow: '0 0 8px #ffd700' }}>
               {money}
             </span>
           </div>
           <button
             onClick={onClose}
             style={{
-              background: 'transparent',
-              border: '1px solid rgba(255,255,255,0.3)',
-              color: 'rgba(255,255,255,0.6)',
-              width: 28,
-              height: 28,
-              borderRadius: 4,
-              cursor: 'pointer',
-              fontSize: 16,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.25)',
+              color: 'rgba(255,255,255,0.7)',
+              width: 36, height: 36,
+              borderRadius: 6, cursor: 'pointer', fontSize: 18,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              touchAction: 'manipulation',
             }}
-            onMouseEnter={e => e.target.style.color = 'white'}
-            onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.6)'}
           >
             ×
           </button>
         </div>
 
         {/* 카테고리 탭 */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        <div style={{ display: 'flex', gap: 6, padding: '10px 12px', flexShrink: 0 }}>
           {Object.values(UPGRADE_CATEGORIES).map(cat => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               style={{
-                flex: 1,
-                padding: '8px 0',
-                background: activeCategory === cat.id
-                  ? 'rgba(0,255,255,0.15)'
-                  : 'rgba(255,255,255,0.05)',
-                border: `2px solid ${activeCategory === cat.id ? '#00ffff' : 'rgba(255,255,255,0.2)'}`,
-                borderRadius: 6,
-                color: activeCategory === cat.id ? '#00ffff' : 'rgba(255,255,255,0.5)',
-                fontFamily: 'monospace',
-                fontSize: 12,
+                flex: 1, padding: '9px 0',
+                background: activeCategory === cat.id ? 'rgba(0,255,255,0.15)' : 'rgba(255,255,255,0.04)',
+                border: `2px solid ${activeCategory === cat.id ? '#00ffff' : 'rgba(255,255,255,0.15)'}`,
+                borderRadius: 7,
+                color: activeCategory === cat.id ? '#00ffff' : 'rgba(255,255,255,0.45)',
+                fontFamily: 'monospace', fontSize: 12,
                 cursor: 'pointer',
-                transition: 'all 0.2s',
-                textShadow: activeCategory === cat.id ? '0 0 8px #00ffff' : 'none',
-                boxShadow: activeCategory === cat.id ? '0 0 12px rgba(0,255,255,0.2)' : 'none',
+                textShadow: activeCategory === cat.id ? '0 0 6px #00ffff' : 'none',
+                touchAction: 'manipulation',
               }}
             >
               {cat.icon} {cat.name}
@@ -141,111 +95,81 @@ export default function UpgradePanel({ upgrades, money, tower, onUpgrade, onClos
           ))}
         </div>
 
-        {/* 업그레이드 목록 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {category.upgrades.map(upgrade => {
-            const level = getUpgradeLevel(upgrade.id);
-            const cost = getUpgradeCostWithLevel(upgrade);
-            const affordable = canAfford(upgrade);
-            const maxed = isMaxLevel(upgrade);
+        {/* 업그레이드 목록 - 스크롤 가능 */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {category.upgrades.map(u => {
+            const level = getLevel(u.id);
+            const cost = getCost(u);
+            const affordable = canAfford(u);
+            const maxed = isMaxed(u);
 
             return (
               <div
-                key={upgrade.id}
+                key={u.id}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '12px 14px',
-                  background: maxed
-                    ? 'rgba(255,215,0,0.05)'
-                    : affordable
-                      ? 'rgba(0,255,255,0.05)'
-                      : 'rgba(255,255,255,0.02)',
-                  border: `1px solid ${maxed ? 'rgba(255,215,0,0.4)' : affordable ? 'rgba(0,255,255,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '11px 12px',
+                  background: maxed ? 'rgba(255,215,0,0.05)' : affordable ? 'rgba(0,255,255,0.05)' : 'rgba(255,255,255,0.02)',
+                  border: `1px solid ${maxed ? 'rgba(255,215,0,0.35)' : affordable ? 'rgba(0,255,255,0.25)' : 'rgba(255,255,255,0.08)'}`,
                   borderRadius: 8,
-                  transition: 'all 0.2s',
                 }}
               >
-                {/* 업그레이드 정보 */}
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 3 }}>
+                {/* 정보 */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
                     <span style={{
-                      color: maxed ? '#ffd700' : affordable ? '#00ffff' : 'rgba(255,255,255,0.5)',
-                      fontFamily: 'monospace',
-                      fontSize: 13,
-                      fontWeight: 'bold',
+                      color: maxed ? '#ffd700' : affordable ? '#00ffff' : 'rgba(255,255,255,0.45)',
+                      fontFamily: 'monospace', fontSize: 12, fontWeight: 'bold',
                     }}>
-                      {upgrade.name}
+                      {u.name}
                     </span>
-                    {/* 레벨 표시 */}
                     {level > 0 && (
                       <span style={{
-                        background: maxed ? 'rgba(255,215,0,0.2)' : 'rgba(0,255,255,0.2)',
+                        background: maxed ? 'rgba(255,215,0,0.15)' : 'rgba(0,255,255,0.15)',
                         color: maxed ? '#ffd700' : '#00ffff',
-                        padding: '1px 6px',
-                        borderRadius: 3,
-                        fontSize: 10,
-                        fontFamily: 'monospace',
+                        padding: '1px 5px', borderRadius: 3, fontSize: 9, fontFamily: 'monospace',
                       }}>
-                        Lv.{level}{upgrade.maxLevel ? `/${upgrade.maxLevel}` : ''}
+                        Lv{level}{u.maxLevel ? `/${u.maxLevel}` : ''}
                       </span>
                     )}
                   </div>
-                  <div style={{
-                    color: 'rgba(200,200,200,0.5)',
-                    fontSize: 11,
-                    fontFamily: 'monospace',
-                  }}>
-                    {upgrade.description}
+                  <div style={{ color: 'rgba(200,200,200,0.45)', fontSize: 10, fontFamily: 'monospace' }}>
+                    {u.description}
                   </div>
-                  <div style={{
-                    color: 'rgba(200,200,200,0.4)',
-                    fontSize: 10,
-                    fontFamily: 'monospace',
-                    marginTop: 2,
-                  }}>
-                    현재: {getStatDisplay(upgrade)}
+                  <div style={{ color: 'rgba(180,180,180,0.35)', fontSize: 9, fontFamily: 'monospace', marginTop: 1 }}>
+                    현재: {getStatDisplay(u)}
                   </div>
                 </div>
 
-                {/* 구매 버튼 */}
+                {/* 구매 버튼 - 터치 타겟 크게 */}
                 <button
-                  onClick={() => !maxed && onUpgrade(upgrade)}
-                  disabled={!affordable}
+                  onClick={() => !maxed && affordable && onUpgrade(u)}
                   style={{
-                    background: maxed
-                      ? 'rgba(255,215,0,0.1)'
-                      : affordable
-                        ? 'rgba(0,255,255,0.15)'
-                        : 'rgba(255,255,255,0.05)',
-                    border: `2px solid ${maxed ? 'rgba(255,215,0,0.5)' : affordable ? '#00ffff' : 'rgba(255,255,255,0.2)'}`,
-                    color: maxed ? '#ffd700' : affordable ? '#00ffff' : 'rgba(255,255,255,0.3)',
-                    padding: '8px 14px',
-                    borderRadius: 6,
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                    cursor: affordable ? 'pointer' : 'not-allowed',
-                    minWidth: 80,
+                    flexShrink: 0,
+                    background: maxed ? 'rgba(255,215,0,0.1)' : affordable ? 'rgba(0,255,255,0.15)' : 'rgba(255,255,255,0.04)',
+                    border: `2px solid ${maxed ? 'rgba(255,215,0,0.45)' : affordable ? '#00ffff' : 'rgba(255,255,255,0.15)'}`,
+                    color: maxed ? '#ffd700' : affordable ? '#00ffff' : 'rgba(255,255,255,0.25)',
+                    padding: '0 10px',
+                    height: 44,
+                    borderRadius: 7,
+                    fontFamily: 'monospace', fontSize: 11,
+                    cursor: affordable ? 'pointer' : 'default',
+                    minWidth: 68,
                     textAlign: 'center',
-                    textShadow: affordable ? '0 0 6px #00ffff' : 'none',
-                    boxShadow: affordable ? '0 0 10px rgba(0,255,255,0.2)' : 'none',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={e => {
-                    if (affordable) {
-                      e.currentTarget.style.background = 'rgba(0,255,255,0.25)';
-                      e.currentTarget.style.boxShadow = '0 0 16px rgba(0,255,255,0.4)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (affordable) {
-                      e.currentTarget.style.background = 'rgba(0,255,255,0.15)';
-                      e.currentTarget.style.boxShadow = '0 0 10px rgba(0,255,255,0.2)';
-                    }
+                    textShadow: affordable ? '0 0 5px #00ffff' : 'none',
+                    touchAction: 'manipulation',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 1,
                   }}
                 >
-                  {maxed ? 'MAX' : `💰 ${cost}`}
+                  {maxed ? (
+                    <span>MAX</span>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: 10 }}>💰</span>
+                      <span>{cost}</span>
+                    </>
+                  )}
                 </button>
               </div>
             );
