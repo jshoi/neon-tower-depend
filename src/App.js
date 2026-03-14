@@ -145,6 +145,7 @@ export default function App() {
             tower={gameState.tower}
             onUpgrade={handleUpgrade}
             onClose={() => setShowUpgrade(false)}
+            currentWave={gameState.waveSystem.currentWave}
           />
         )}
 
