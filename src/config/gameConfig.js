@@ -17,8 +17,8 @@ export const GAME_CONFIG = {
     absoluteDefense: 0,      // 절대 방어
     thornDamage: 0,          // 가시 손상
     lifeSteal: 0,            // 흡혈 %
-    x: 400,
-    y: 300,
+    x: 800 / 2,   // 캔버스 중앙
+    y: 600 / 2,
     size: 30,
   },
 

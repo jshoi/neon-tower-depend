@@ -15,30 +15,33 @@ import GameOver from './components/GameOver';
 
 const LOGICAL_W = GAME_CONFIG.canvas.width;   // 800
 const LOGICAL_H = GAME_CONFIG.canvas.height;  // 600
-const HUD_HEIGHT = 56; // 논리 픽셀 기준 HUD 높이
+const HUD_HEIGHT = 56;
+
+// 초기 scale을 즉시 계산 (useState(1) 대신 사용해서 첫 렌더부터 올바른 크기)
+function calcScale() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  return Math.min(vw / LOGICAL_W, vh / (LOGICAL_H + HUD_HEIGHT));
+}
 
 export default function App() {
   const [gameState, setGameState] = useState(() => createInitialGameState());
   const [showUpgrade, setShowUpgrade] = useState(false);
-  const [scale, setScale] = useState(1);
+  // 초기값을 즉시 계산된 값으로 설정
+  const [scale, setScale] = useState(() => calcScale());
   const animFrameRef = useRef(null);
-  const containerRef = useRef(null);
 
-  // 브라우저 크기에 맞게 scale 계산
+  // 리사이즈 대응
   useEffect(() => {
-    function calcScale() {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const s = Math.min(vw / LOGICAL_W, vh / (LOGICAL_H + HUD_HEIGHT));
-      setScale(s);
+    function handleResize() {
+      setScale(calcScale());
     }
-    calcScale();
-    window.addEventListener('resize', calcScale);
-    // 모바일 주소창 변화 대응
-    window.addEventListener('orientationchange', () => setTimeout(calcScale, 200));
+    window.addEventListener('resize', handleResize);
+    const onOrient = () => setTimeout(handleResize, 200);
+    window.addEventListener('orientationchange', onOrient);
     return () => {
-      window.removeEventListener('resize', calcScale);
-      window.removeEventListener('orientationchange', calcScale);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', onOrient);
     };
   }, []);
 
@@ -56,35 +59,7 @@ export default function App() {
     return () => { if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current); };
   }, [gameLoop]);
 
-  // 터치: 두 손가락 탭 → 일시정지, 한 손가락 탭 → 업그레이드 패널
-  useEffect(() => {
-    let touchStartCount = 0;
-    let touchStartTime = 0;
-
-    const onTouchStart = (e) => {
-      touchStartCount = e.touches.length;
-      touchStartTime = Date.now();
-    };
-
-    const onTouchEnd = (e) => {
-      const elapsed = Date.now() - touchStartTime;
-      if (elapsed > 300) return; // 롱탭 무시
-
-      if (touchStartCount >= 2) {
-        // 두 손가락 탭 → 일시정지
-        setGameState(prev => togglePause(prev));
-      }
-    };
-
-    window.addEventListener('touchstart', onTouchStart, { passive: true });
-    window.addEventListener('touchend', onTouchEnd, { passive: true });
-    return () => {
-      window.removeEventListener('touchstart', onTouchStart);
-      window.removeEventListener('touchend', onTouchEnd);
-    };
-  }, []);
-
-  // PC 키보드 단축키 (있으면 그냥 유지)
+  // PC 키보드 단축키
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === 'Escape') setShowUpgrade(prev => !prev);
@@ -115,27 +90,21 @@ export default function App() {
 
   const isGameOver = gameState.gameState === GAME_STATE.GAME_OVER;
   const isPaused = gameState.gameState === GAME_STATE.PAUSED;
-
   const totalH = LOGICAL_H + HUD_HEIGHT;
 
   return (
     <div
       style={{
         width: '100vw',
-        height: '100vh',
+        height: '100dvh',
         background: '#000',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
-        // 모바일 주소창 안전 영역
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      {/* scale 래퍼 - transform-origin: top center */}
       <div
-        ref={containerRef}
         style={{
           position: 'relative',
           width: LOGICAL_W,
@@ -147,6 +116,8 @@ export default function App() {
           borderRadius: 8,
           overflow: 'hidden',
           boxShadow: '0 0 60px rgba(0,255,255,0.15)',
+          // 레이아웃이 scale 이전 크기를 차지하지 않도록
+          flexShrink: 0,
         }}
       >
         {/* HUD */}
