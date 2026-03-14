@@ -1,25 +1,25 @@
 export const GAME_CONFIG = {
-  // 캔버스 설정
+  // 캔버스 설정 - 모바일 세로 비율 (9:19.5)
   canvas: {
-    width: 800,
-    height: 600,
+    width: 390,
+    height: 720,
   },
 
   // 타워 초기 스탯
   tower: {
     health: 100,
     maxHealth: 100,
-    healthRegen: 0.1,       // 초당 회복량
+    healthRegen: 0.1,
     attackDamage: 10,
-    attackSpeed: 1,          // 초당 공격 횟수
-    attackRange: 200,
-    defense: 0,              // 방어율 %
-    absoluteDefense: 0,      // 절대 방어
-    thornDamage: 0,          // 가시 손상
-    lifeSteal: 0,            // 흡혈 %
-    x: 800 / 2,   // 캔버스 중앙
-    y: 600 / 2,
-    size: 30,
+    attackSpeed: 1,
+    attackRange: 150,
+    defense: 0,
+    absoluteDefense: 0,
+    thornDamage: 0,
+    lifeSteal: 0,
+    x: 390 / 2,   // 캔버스 중앙
+    y: 720 / 2,
+    size: 26,
   },
 
   // 적 기본 스탯
@@ -27,19 +27,19 @@ export const GAME_CONFIG = {
     baseHealth: 30,
     baseDamage: 5,
     baseSpeed: 1,
-    baseReward: 10,          // 처치 시 코인
-    size: 14,
+    baseReward: 10,
+    size: 12,
   },
 
   // 웨이브 설정
   wave: {
     initialEnemies: 5,
     enemyIncreasePerWave: 2,
-    healthScaling: 1.15,     // 웨이브당 체력 증가율
-    damageScaling: 1.1,      // 웨이브당 공격력 증가율
-    speedScaling: 0.05,      // 웨이브당 속도 증가율
-    spawnInterval: 1500,     // ms
-    waveBreakDuration: 4000, // 웨이브 사이 휴식 시간 ms
+    healthScaling: 1.15,
+    damageScaling: 1.1,
+    speedScaling: 0.05,
+    spawnInterval: 1500,
+    waveBreakDuration: 4000,
   },
 
   // 게임 진행
